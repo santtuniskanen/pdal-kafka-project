@@ -1,19 +1,33 @@
 package main
 
 import (
-	"fmt"
+	"log"
 )
 
 func main() {
-	pool := NewWorkerPool(700)
+	log.Printf("Starting application...")
 
-	for i := range 100000 {
+	config := NewConfig()
+
+	kafka, err := NewKafkaClient(
+		config.KafkaBrokers,
+		config.KafkaTopic,
+		config.ProducerConfig,
+	)
+	if err != nil {
+		log.Fatalf("Failed to create Kafka client: %v", err)
+	}
+	defer kafka.Close()
+
+	pool := NewWorkerPool(10000)
+	for i := range 10000 {
 		jobNum := i
 		pool.Submit(func() {
-			fmt.Printf("Executing job %d\n", jobNum)
+			if err := kafka.SendMessage(); err != nil {
+				log.Printf("Job %d: failed to send message: %v", jobNum, err)
+			}
 		})
 	}
-
 	pool.Close()
-	fmt.Println("All jobs completed")
+	log.Println("All jobs submitted and workers finished")
 }

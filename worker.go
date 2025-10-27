@@ -14,7 +14,7 @@ type WorkerPool struct {
 func NewWorkerPool(numOfWorkers int) *WorkerPool {
 	pool := &WorkerPool{
 		numOfWorkers: numOfWorkers,
-		jobs: make(chan func()),
+		jobs:         make(chan func()),
 	}
 
 	for i := range numOfWorkers {
@@ -32,7 +32,7 @@ func (p *WorkerPool) worker(id int) {
 		fmt.Printf("Worker %d: starting job\n", id)
 		job()
 		fmt.Printf("Worker %d: finished job\n", id)
-	} 
+	}
 }
 
 func (p *WorkerPool) Submit(job func()) {
